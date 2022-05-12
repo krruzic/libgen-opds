@@ -1,0 +1,11 @@
+{
+  "items": [
+    {
+      "name": "Stop LibGen OPDS Bridge",
+      "priority": -998,
+      "action": "bin/stop.sh",
+      "refresh": true,
+      "exitmenu": false
+    }
+  ]
+}
