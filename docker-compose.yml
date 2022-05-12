@@ -1,0 +1,7 @@
+---
+services:
+  libgen-opds:
+    platform: linux/amd64
+    build: .
+    volumes:
+      - .:/app
