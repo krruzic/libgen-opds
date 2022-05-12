@@ -17,10 +17,6 @@ func (api *API) RootHandler(w http.ResponseWriter, r *http.Request) {
 		Updated: time.Now().UTC(),
 		Links: []opds.Link{
 			opds.Link{
-				Rel:      "self",
-				TypeLink: "application/atom+xml",
-			},
-			opds.Link{
 				Title:    "Search LibGen",
 				Rel:      "search",
 				TypeLink: "application/opensearchdescription+xml",

@@ -19,4 +19,4 @@ At the moment, only `epub` books are searched for, results are limited to 25 ite
 
 ## Build For Kindle
 
-    docker-compose run --rm libgen-opds compile
+    docker-compose run --rm libgen-opds compile_kindle

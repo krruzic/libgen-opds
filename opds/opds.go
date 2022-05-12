@@ -21,7 +21,7 @@ type Feed struct {
 // Link link to different resources
 type Link struct {
 	Rel                 string                `xml:"rel,attr"`
-	Href                string                `xml:"href,attr"`
+	Href                string                `xml:"href,attr,omitempty"`
 	TypeLink            string                `xml:"type,attr"`
 	Title               string                `xml:"title,attr,omitempty"`
 	FacetGroup          string                `xml:"facetGroup,attr,omitempty"`

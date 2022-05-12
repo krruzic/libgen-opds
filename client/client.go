@@ -100,7 +100,7 @@ func ParseLibGen(body io.ReadCloser) []opds.Entry {
 			},
 			Links: []opds.Link{
 				opds.Link{
-					Rel:      "acquisition",
+					Rel:      "http://opds-spec.org/acquisition",
 					Href:     "./download?md5=" + md5,
 					TypeLink: "application/epub+zip",
 				},
