@@ -15,8 +15,9 @@ func NewApi() *API {
 
 	api.Router.HandleFunc("/", api.RootHandler)
 	api.Router.HandleFunc("/search.xml", api.SearchDescriptionHandler)
-	api.Router.HandleFunc("/search", api.LibGenSearchHandler)
+	api.Router.HandleFunc("/search", api.SearchHandler)
 	api.Router.HandleFunc("/most-read", api.GoodReadsMostReadHandler)
+	api.Router.HandleFunc("/most-popular", api.LibZMostPopularHandler)
 	api.Router.HandleFunc("/download", api.DownloadHandler)
 
 	return api

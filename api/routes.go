@@ -24,10 +24,23 @@ func (api *API) RootHandler(w http.ResponseWriter, r *http.Request) {
 			},
 		},
 		Entries: []opds.Entry{
+			// opds.Entry{
+			// 	Title: "ZLib - Most Popular",
+			// 	Content: &opds.Content{
+			// 		Content:     "ZLib - Most Popular",
+			// 		ContentType: "text",
+			// 	},
+			// 	Links: []opds.Link{
+			// 		opds.Link{
+			// 			Href:     "./most-popular",
+			// 			TypeLink: "application/atom+xml;type=feed;profile=opds-catalog",
+			// 		},
+			// 	},
+			// },
 			opds.Entry{
-				Title: "Most Read This Month",
+				Title: "Goodreads - Most Read This Month",
 				Content: &opds.Content{
-					Content:     "Most Read This Month",
+					Content:     "Goodreads - Most Read This Month",
 					ContentType: "text",
 				},
 				Links: []opds.Link{
@@ -38,9 +51,9 @@ func (api *API) RootHandler(w http.ResponseWriter, r *http.Request) {
 				},
 			},
 			opds.Entry{
-				Title: "Most Read This Year",
+				Title: "Goodreads - Most Read This Year",
 				Content: &opds.Content{
-					Content:     "Most Read This Year",
+					Content:     "Goodreads - Most Read This Year",
 					ContentType: "text",
 				},
 				Links: []opds.Link{
@@ -74,11 +87,20 @@ func (api *API) SearchDescriptionHandler(w http.ResponseWriter, r *http.Request)
 }
 
 func (api *API) DownloadHandler(w http.ResponseWriter, r *http.Request) {
-	md5 := r.URL.Query().Get("md5")
+	id := r.URL.Query().Get("id")
+	downloadType := r.URL.Query().Get("type")
 
-	// Acquire & Parse Download URL
-	body := client.GetPage("http://library.lol/fiction/" + md5)
-	downloadURL := client.ParseDownloadURL(body)
+	// Derive Info URL
+	var infoURL string
+	if downloadType == "fiction" {
+		infoURL = "http://library.lol/fiction/" + id
+	} else if downloadType == "non-fiction" {
+		infoURL = "http://library.lol/main/" + id
+	}
+
+	// Parse & Derive Download URL
+	body := client.GetPage(infoURL)
+	downloadURL := client.ParseLibGenDownloadURL(body)
 
 	// Redirect
 	http.Redirect(w, r, downloadURL, 301)
@@ -113,27 +135,80 @@ func (api *API) GoodReadsMostReadHandler(w http.ResponseWriter, r *http.Request)
 
 }
 
-func (api *API) LibGenSearchHandler(w http.ResponseWriter, r *http.Request) {
-
-	// Derive URL
-	query := r.URL.Query().Get("query")
-	mirror := "https://libgen.is"
-	language := "English"
-	format := "epub"
-	libGenURL := mirror +
-		"/fiction/?q=" +
-		url.QueryEscape(query) +
-		"&criteria=&" +
-		"&language=" + language +
-		"&format=" + format
-
-	// Acquire & Parse Source
-	body := client.GetPage(libGenURL)
-	allEntries := client.ParseLibGen(body)
+func (api *API) LibZMostPopularHandler(w http.ResponseWriter, r *http.Request) {
+	// Acquire & Parse Page Source
+	body := client.GetPage("https://usa1lib.org/popular.php")
+	allEntries := client.ParseZLibPopular(body)
 
 	// Build XML
 	mostReadFeed := &opds.Feed{
-		Title:   "Search Results",
+		Title:   "ZLib Most Popular",
+		Updated: time.Now().UTC(),
+		Entries: allEntries,
+	}
+	feedXML, _ := xml.Marshal(mostReadFeed)
+
+	// Serve
+	w.Header().Set("Content-Type", "application/xml")
+	w.Header().Set("Last-Modified", time.Now().UTC().Format(http.TimeFormat))
+	w.Write(feedXML)
+}
+
+func (api *API) SearchHandler(w http.ResponseWriter, r *http.Request) {
+
+	// Acquire Params
+	query := r.URL.Query().Get("query")
+	searchType := r.URL.Query().Get("type")
+
+	var allEntries []opds.Entry
+	feedTitle := "Search Results"
+
+	if searchType == "fiction" {
+		// Search Fiction
+		url := "https://libgen.is/fiction/?q=" + url.QueryEscape(query) + "&language=English"
+		body := client.GetPage(url)
+		allEntries = client.ParseLibGenFiction(body)
+	} else if searchType == "non-fiction" {
+		// Search NonFiction
+		url := "https://libgen.is/search.php?req=" + url.QueryEscape(query)
+		body := client.GetPage(url)
+		allEntries = client.ParseLibGenNonFiction(body)
+	} else {
+		// Offer Options
+		feedTitle = "Select Search Type"
+		allEntries = []opds.Entry{
+			opds.Entry{
+				Title: "Search Fiction",
+				Content: &opds.Content{
+					Content:     "Search Fiction",
+					ContentType: "text",
+				},
+				Links: []opds.Link{
+					opds.Link{
+						Href:     "./search?type=fiction&query=" + url.QueryEscape(query),
+						TypeLink: "application/atom+xml;type=feed;profile=opds-catalog",
+					},
+				},
+			},
+			opds.Entry{
+				Title: "Search Non-Fiction",
+				Content: &opds.Content{
+					Content:     "Search Non-Fiction",
+					ContentType: "text",
+				},
+				Links: []opds.Link{
+					opds.Link{
+						Href:     "./search?type=non-fiction&query=" + url.QueryEscape(query),
+						TypeLink: "application/atom+xml;type=feed;profile=opds-catalog",
+					},
+				},
+			},
+		}
+	}
+
+	// Build XML
+	mostReadFeed := &opds.Feed{
+		Title:   feedTitle,
 		Updated: time.Now().UTC(),
 		Entries: allEntries,
 	}
