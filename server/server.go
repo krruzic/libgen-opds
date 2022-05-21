@@ -22,7 +22,7 @@ func NewServer() *Server {
 }
 
 func (s *Server) StartServer() {
-	listenAddr := (":5144")
+	listenAddr := ("127.0.0.1:5144")
 
 	s.httpServer = &http.Server{
 		Handler: s.API.Router,
