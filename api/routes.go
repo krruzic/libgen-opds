@@ -12,6 +12,14 @@ import (
 
 func (api *API) RootHandler(w http.ResponseWriter, r *http.Request) {
 
+	// Headers
+	w.Header().Set("Last-Modified", time.Now().UTC().Format(http.TimeFormat))
+	w.Header().Set("Content-Type", "application/xml")
+
+	if r.Method == http.MethodHead {
+		return
+	}
+
 	rootFeed := opds.Feed{
 		Title:   "LibGen OPDS Bridge",
 		Updated: time.Now().UTC(),
@@ -67,16 +75,20 @@ func (api *API) RootHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	feedXML, _ := xml.Marshal(rootFeed)
-	w.Header().Set("Content-Type", "application/xml")
-	w.Header().Set("Last-Modified", time.Now().UTC().Format(http.TimeFormat))
 	w.Write(feedXML)
 
 }
 
 func (api *API) SearchDescriptionHandler(w http.ResponseWriter, r *http.Request) {
 
-	w.Header().Set("Content-Type", "application/xml")
+	// Headers
 	w.Header().Set("Last-Modified", time.Now().UTC().Format(http.TimeFormat))
+	w.Header().Set("Content-Type", "application/xml")
+
+	if r.Method == http.MethodHead {
+		return
+	}
+
 	w.Write([]byte(`
 		<OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/">
 			<ShortName>Search LibGen</ShortName>
@@ -108,6 +120,14 @@ func (api *API) DownloadHandler(w http.ResponseWriter, r *http.Request) {
 
 func (api *API) GoodReadsMostReadHandler(w http.ResponseWriter, r *http.Request) {
 
+	// Headers
+	w.Header().Set("Last-Modified", time.Now().UTC().Format(http.TimeFormat))
+	w.Header().Set("Content-Type", "application/xml")
+
+	if r.Method == http.MethodHead {
+		return
+	}
+
 	// Derive Duration
 	var duration string
 	if r.URL.Query().Get("cadence") == "month" {
@@ -129,13 +149,19 @@ func (api *API) GoodReadsMostReadHandler(w http.ResponseWriter, r *http.Request)
 	feedXML, _ := xml.Marshal(mostReadFeed)
 
 	// Serve
-	w.Header().Set("Content-Type", "application/xml")
-	w.Header().Set("Last-Modified", time.Now().UTC().Format(http.TimeFormat))
 	w.Write(feedXML)
 
 }
 
 func (api *API) LibZMostPopularHandler(w http.ResponseWriter, r *http.Request) {
+	// Headers
+	w.Header().Set("Last-Modified", time.Now().UTC().Format(http.TimeFormat))
+	w.Header().Set("Content-Type", "application/xml")
+
+	if r.Method == http.MethodHead {
+		return
+	}
+
 	// Acquire & Parse Page Source
 	body := client.GetPage("https://usa1lib.org/popular.php")
 	allEntries := client.ParseZLibPopular(body)
@@ -149,12 +175,18 @@ func (api *API) LibZMostPopularHandler(w http.ResponseWriter, r *http.Request) {
 	feedXML, _ := xml.Marshal(mostReadFeed)
 
 	// Serve
-	w.Header().Set("Content-Type", "application/xml")
-	w.Header().Set("Last-Modified", time.Now().UTC().Format(http.TimeFormat))
 	w.Write(feedXML)
 }
 
 func (api *API) SearchHandler(w http.ResponseWriter, r *http.Request) {
+
+	// Headers
+	w.Header().Set("Last-Modified", time.Now().UTC().Format(http.TimeFormat))
+	w.Header().Set("Content-Type", "application/xml")
+
+	if r.Method == http.MethodHead {
+		return
+	}
 
 	// Acquire Params
 	query := r.URL.Query().Get("query")
@@ -207,16 +239,14 @@ func (api *API) SearchHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Build XML
-	mostReadFeed := &opds.Feed{
+	searchFeed := &opds.Feed{
 		Title:   feedTitle,
 		Updated: time.Now().UTC(),
 		Entries: allEntries,
 	}
-	feedXML, _ := xml.Marshal(mostReadFeed)
+	feedXML, _ := xml.Marshal(searchFeed)
 
 	// Serve
-	w.Header().Set("Content-Type", "application/xml")
-	w.Header().Set("Last-Modified", time.Now().UTC().Format(http.TimeFormat))
 	w.Write(feedXML)
 
 }

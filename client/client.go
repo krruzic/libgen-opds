@@ -4,6 +4,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strings"
 	"time"
 
@@ -29,6 +30,11 @@ var mimeMapping map[string]string = map[string]string{
 func GetPage(page string) io.ReadCloser {
 	resp, _ := http.Get(page)
 	return resp.Body
+}
+
+func StripText(text string) string {
+	reMultiSpace := regexp.MustCompile(`\s+`)
+	return reMultiSpace.ReplaceAllString(text, " ")
 }
 
 /* -------------------------------------------------------------------------- */
@@ -61,24 +67,24 @@ func ParseLibGenFiction(body io.ReadCloser) []opds.Entry {
 		id := hrefArray[len(hrefArray)-1]
 
 		// Parse Other Details
-		title := rawBook.Find("td:nth-child(3)").Text()
+		title := rawBook.Find("td:nth-child(3) p a").Text()
 		author := rawBook.Find(".catalog_authors li a").Text()
 		language := rawBook.Find("td:nth-child(4)").Text()
 		series := rawBook.Find("td:nth-child(2)").Text()
 
 		// Create Entry Item
 		item := opds.Entry{
-			Title:    "[" + fileDesc + "] " + title,
-			Language: language,
+			Title:    StripText("[" + fileDesc + "] " + title),
+			Language: StripText(language),
 			Updated:  &uploadDate,
 			Series: []opds.Serie{
 				opds.Serie{
-					Name: series,
+					Name: StripText(series),
 				},
 			},
 			Author: []opds.Author{
 				opds.Author{
-					Name: author,
+					Name: StripText(author),
 				},
 			},
 			Links: []opds.Link{
@@ -125,16 +131,16 @@ func ParseLibGenNonFiction(body io.ReadCloser) []opds.Entry {
 
 		// Create Entry Item
 		item := opds.Entry{
-			Title:    "[" + fileDesc + "] " + title,
-			Language: language,
+			Title:    StripText("[" + fileDesc + "] " + title),
+			Language: StripText(language),
 			Series: []opds.Serie{
 				opds.Serie{
-					Name: series,
+					Name: StripText(series),
 				},
 			},
 			Author: []opds.Author{
 				opds.Author{
-					Name: author,
+					Name: StripText(author),
 				},
 			},
 			Links: []opds.Link{
@@ -202,10 +208,10 @@ func ParseZLib(body io.ReadCloser) []opds.Entry {
 
 		// Create Entry Item
 		item := opds.Entry{
-			Title: "[" + fileItem + "] " + title,
+			Title: StripText("[" + fileItem + "] " + title),
 			Author: []opds.Author{
 				opds.Author{
-					Name: author,
+					Name: StripText(author),
 				},
 			},
 			Links: []opds.Link{
@@ -240,15 +246,15 @@ func ParseZLibPopular(body io.ReadCloser) []opds.Entry {
 		author, _ := rawMeta.Attr("data-author")
 
 		item := opds.Entry{
-			Title: title,
+			Title: StripText(title),
 			Author: []opds.Author{
 				opds.Author{
-					Name: author,
+					Name: StripText(author),
 				},
 			},
 			Links: []opds.Link{
 				opds.Link{
-					Href:     "./search?query=" + url.QueryEscape(title+" - "+author),
+					Href:     "./search?query=" + url.QueryEscape(StripText(title)+" - "+StripText(author)),
 					TypeLink: "application/atom+xml;type=feed;profile=opds-catalog",
 				},
 			},
@@ -278,15 +284,15 @@ func ParseGoodReads(body io.ReadCloser) []opds.Entry {
 		author := rawBook.Find(".authorName span").Text()
 
 		item := opds.Entry{
-			Title: title,
+			Title: StripText(title),
 			Author: []opds.Author{
 				opds.Author{
-					Name: author,
+					Name: StripText(author),
 				},
 			},
 			Links: []opds.Link{
 				opds.Link{
-					Href:     "./search?query=" + url.QueryEscape(title+" - "+author),
+					Href:     "./search?query=" + url.QueryEscape(StripText(title)+" - "+StripText(author)),
 					TypeLink: "application/atom+xml;type=feed;profile=opds-catalog",
 				},
 			},

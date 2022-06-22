@@ -1,11 +1,19 @@
 package api
 
 import (
+	"log"
 	"net/http"
+	"time"
 )
 
 type API struct {
 	Router *http.ServeMux
+}
+
+func (api *API) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	start := time.Now()
+	api.Router.ServeHTTP(w, r)
+	log.Printf("- %s - %s %s - %v", r.RemoteAddr, r.Method, r.URL, time.Since(start))
 }
 
 func NewApi() *API {
