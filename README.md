@@ -4,8 +4,6 @@
 This creates a bridge between Library Genesis and OPDS. You can search and download books on LibGen via KOReaders OPDS Search. Most read lists from GoodReads are also parsed, and allow you to directly jump to a relevant LibGen search.
 
 ## Limitations
-- Only `epub`
-- Only fiction
 - Only 25 results / search
 
 ## KUAL Extension Installation
@@ -17,11 +15,18 @@ This creates a bridge between Library Genesis and OPDS. You can search and downl
   - Catalog URL: http://127.0.0.1:5144
   
 ## Building
+The output will be in `./build/dist`:
 
     # Kindle KUAL Extension
     make build_kual_extension
 
+    # MultiArch Binaries
+    make build_multiarch
+
     # Docker MultiArch (Note: You may need to use `docker buildx create --use`)
+    make build_multiarch_docker
+
+    # Docker
     make build_docker
 
 ## To Do

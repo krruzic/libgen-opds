@@ -99,6 +99,14 @@ func ParseLibGenFiction(body io.ReadCloser) []opds.Entry {
 		allEntries = append(allEntries, item)
 	})
 
+	// Account for Empty Results
+	if len(allEntries) == 0 {
+		item := opds.Entry{
+			Title: "--- None Found ---",
+		}
+		allEntries = append(allEntries, item)
+	}
+
 	// Return Results
 	return allEntries
 }
@@ -154,6 +162,14 @@ func ParseLibGenNonFiction(body io.ReadCloser) []opds.Entry {
 
 		allEntries = append(allEntries, item)
 	})
+
+	// Account for Empty Results
+	if len(allEntries) == 0 {
+		item := opds.Entry{
+			Title: "--- None Found ---",
+		}
+		allEntries = append(allEntries, item)
+	}
 
 	// Return Results
 	return allEntries

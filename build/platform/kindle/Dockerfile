@@ -10,5 +10,3 @@ ENV GOOS=linux
 ENV GOARCH=arm
 ENV GOARM=7
 ENV CGO_ENABLED=1
-
-# CMD ["/bin/bash", "-c"]

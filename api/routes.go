@@ -32,19 +32,6 @@ func (api *API) RootHandler(w http.ResponseWriter, r *http.Request) {
 			},
 		},
 		Entries: []opds.Entry{
-			// opds.Entry{
-			// 	Title: "ZLib - Most Popular",
-			// 	Content: &opds.Content{
-			// 		Content:     "ZLib - Most Popular",
-			// 		ContentType: "text",
-			// 	},
-			// 	Links: []opds.Link{
-			// 		opds.Link{
-			// 			Href:     "./most-popular",
-			// 			TypeLink: "application/atom+xml;type=feed;profile=opds-catalog",
-			// 		},
-			// 	},
-			// },
 			opds.Entry{
 				Title: "Goodreads - Most Read This Month",
 				Content: &opds.Content{
@@ -71,6 +58,19 @@ func (api *API) RootHandler(w http.ResponseWriter, r *http.Request) {
 					},
 				},
 			},
+			// opds.Entry{
+			// 	Title: "Check for Updates",
+			// 	Content: &opds.Content{
+			// 		Content:     "Check for Updates",
+			// 		ContentType: "text",
+			// 	},
+			// 	Links: []opds.Link{
+			// 		opds.Link{
+			// 			Href:     "./update-check",
+			// 			TypeLink: "application/atom+xml;type=feed;profile=opds-catalog",
+			// 		},
+			// 	},
+			// },
 		},
 	}
 
