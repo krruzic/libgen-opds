@@ -3,11 +3,14 @@ package api
 import (
 	"log"
 	"net/http"
+	"os"
 	"time"
 )
 
 type API struct {
-	Router *http.ServeMux
+	Router   *http.ServeMux
+	Username string
+	Password string
 }
 
 func (api *API) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -17,16 +20,27 @@ func (api *API) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func NewApi() *API {
-	api := &API{
-		Router: http.NewServeMux(),
+	username := os.Getenv("API_USERNAME")
+	if username == "" {
+		log.Fatal("environment variable API_USERNAME must be set!")
+	}
+	password := os.Getenv("API_PASSWORD")
+	if password == "" {
+		log.Fatal("environment variable API_PASSWORD must be set!")
 	}
 
-	api.Router.HandleFunc("/", api.RootHandler)
-	api.Router.HandleFunc("/search.xml", api.SearchDescriptionHandler)
-	api.Router.HandleFunc("/search", api.SearchHandler)
-	api.Router.HandleFunc("/most-read", api.GoodReadsMostReadHandler)
-	api.Router.HandleFunc("/most-popular", api.LibZMostPopularHandler)
-	api.Router.HandleFunc("/download", api.DownloadHandler)
+	api := &API{
+		Router:   http.NewServeMux(),
+		Username: username,
+		Password: password,
+	}
+
+	api.Router.HandleFunc("/", api.basicAuth(api.RootHandler))
+	api.Router.HandleFunc("/search.xml", api.basicAuth(api.SearchDescriptionHandler))
+	api.Router.HandleFunc("/search", api.basicAuth(api.SearchHandler))
+	api.Router.HandleFunc("/most-read", api.basicAuth(api.GoodReadsMostReadHandler))
+	api.Router.HandleFunc("/most-popular", api.basicAuth(api.LibZMostPopularHandler))
+	api.Router.HandleFunc("/download", api.basicAuth(api.DownloadHandler))
 
 	return api
 }

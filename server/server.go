@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"os"
 	"reichard.io/libgen-opds/api"
 )
 
@@ -22,7 +23,16 @@ func NewServer() *Server {
 }
 
 func (s *Server) StartServer() {
-	listenAddr := ("127.0.0.1:5144")
+	iface := os.Getenv("API_INTERFACE")
+	if iface == "" {
+		iface = "127.0.0.1"
+	}
+	port := os.Getenv("API_PORT")
+	if port == "" {
+		port = "5144"
+	}
+
+	listenAddr := (iface + ":" + port)
 
 	s.httpServer = &http.Server{
 		Handler: s.API,
