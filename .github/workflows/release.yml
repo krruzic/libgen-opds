@@ -1,0 +1,70 @@
+name: build_and_release
+
+env:
+  PRODUCT_NAME: libgen-opds
+
+on:
+  push:
+    tags:
+      - "*"
+    branches: "*"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        GOOS:
+          - linux
+        GOARCH:
+          - arm64
+          - arm
+          - amd64
+        include:
+          - GOOS: windows
+            GOARCH: amd64
+          - GOOS: darwin
+            GOARCH: amd64
+          - GOOS: darwin
+            GOARCH: arm64
+    outputs:
+      tag: ${{  steps.release_name.outputs.version  }}
+    steps:
+      - name: Checkout this repository
+        uses: actions/checkout@v4
+      - name: Template our release name
+        id: release_name
+        run: |
+          if [[ "${{ github.ref_type  }}" == "tag" ]] ; then
+            VERSION="${{  github.ref_name  }}"
+            # example: v1.0
+          else
+            VERSION="${{  github.ref_name  }}_$(date -I)"
+            # example: master_2024-07-15
+          fi
+          FILENAME="${{  env.PRODUCT_NAME  }}_${{  matrix.GOOS  }}-${{  matrix.GOARCH  }}${{  matrix.GOOS == 'windows' && '.exe' || null  }}"
+          OUTFILE="./build/dist/binary/${FILENAME}"
+          echo "version=${VERSION}" | tee -a $GITHUB_OUTPUT
+          echo "filename=${FILENAME}" | tee -a $GITHUB_OUTPUT
+          echo "outfile=${OUTFILE}" | tee -a $GITHUB_OUTPUT
+      - name: Build the release
+        run: env GOOS=${{  matrix.GOOS  }} GOARCH=${{  matrix.GOARCH  }} go build -o ${{  steps.release_name.outputs.outfile  }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{  steps.release_name.outputs.filename  }}
+          path: ${{  steps.release_name.outputs.outfile  }}
+  release:
+    permissions: write-all
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+      - run: gh release delete ${{  needs.build.outputs.tag  }} --repo ${{  github.repository  }} --yes || true
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - uses: ncipollo/release-action@v1
+        with:
+          tag: "${{  needs.build.outputs.tag  }}"
+          artifacts: "**/*"
